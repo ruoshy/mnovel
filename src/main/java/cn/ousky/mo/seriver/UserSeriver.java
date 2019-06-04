@@ -38,6 +38,7 @@ public class UserSeriver {
     private ResultUtil resultUtil;
 
     public User login(User rser) {
+        // 登录验证
         User user = userMapper.queryCount(rser);
         if (user == null)
             return rser;
@@ -45,10 +46,11 @@ public class UserSeriver {
     }
 
     public Messagem register(User rser, String code) {
+        // 获取redis验证码
         String rcode = redisTemplate.opsForValue().get(rser.getUser()) + "";
         int mcode = 0;
         try {
-            if (code.equals(rcode)) {   // 效验验证码
+            if (code.equals(rcode)) {   // 校验验证码
                 redisTemplate.delete(rser.getUser());   // 删除redis验证码
                 userMapper.register(rser);     // 注册
                 mcode = 1;
@@ -60,20 +62,23 @@ public class UserSeriver {
     }
 
     public Messagem updatePassword(User rser, String code) {
+        // 获取redis验证码
         String rcode = redisTemplate.opsForValue().get(rser.getUser()) + "";
         int mcode = 0;
-        if (code.equals(rcode))     // 效验验证码
+        if (code.equals(rcode))     // 校验验证码
             if (userMapper.updatePassword(rser) == 1)    // 更新密码
                 mcode = 1;
         return resultUtil.getMessage(mcode == 1 ? "找回密码成功" : "验证码错误", mcode);
     }
 
     public Messagem insertTopic(Topic topic) {
+        // 插入评论
         int mcode = topicMapper.insertTopic(topic);
         return resultUtil.getMessage(mcode == 1 ? "插入成功" : "插入失败", mcode);
     }
 
     public List<Topic> findTopicByBookId(int id, int ofset, int size) {
+        // 获取id对应book评论从ofset开始最多取15条 
         int dSize = size > 15 ? 15 : size;
         return topicMapper.findBookById(id, ofset, dSize);
     }
